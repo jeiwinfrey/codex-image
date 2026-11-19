@@ -1,0 +1,22 @@
+{
+  "name": "codex-image",
+  "version": "0.1.1",
+  "description": "Generate PNGs from the terminal using your Codex ChatGPT sign-in.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeiwinfrey/codex-image.git"
+  },
+  "bin": {
+    "codex-image": "bin/codex-image.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "SKILL.md"
+  ]
+}
