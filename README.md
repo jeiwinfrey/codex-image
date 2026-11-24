@@ -1,8 +1,8 @@
 # codex-image
 
-Generate a PNG from a text prompt using the ChatGPT account already signed into
-your local Codex CLI. The command can run from a terminal, a script, or a Codex
-agent with shell access.
+Generate a PNG from a text prompt and optional reference images using the ChatGPT
+account already signed into your local Codex CLI. Run it from a terminal, a
+script, or a Codex agent with shell access.
 
 ## Install the Codex skill
 
@@ -41,6 +41,16 @@ printf '%s\n' 'Ink illustration of a heron in flight, transparent background' |
 The command creates missing output directories, defaults to `image.png`, and
 prints the absolute file path to stdout on success. Existing files are preserved.
 Errors go to stderr and return a nonzero exit status.
+
+## Use reference images
+
+Pass a local image with `--reference` or `-r` and describe the result you want.
+Repeat the flag for up to five files. Codex receives them in the order listed.
+
+```sh
+codex-image -r sketch.png -r palette.jpg -o assets/hero.png \
+  "Use the first image for the composition and the second for the colors."
+```
 
 Request a transparent background in the description for a cutout. Codex
 chooses quality and pixel dimensions automatically. Each call uses the signed-in

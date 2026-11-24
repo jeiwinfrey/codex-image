@@ -1,6 +1,6 @@
 ---
 name: codex-image
-description: Generate new PNG assets from text using the local Codex CLI and its ChatGPT sign-in. Use when the user asks for a generated raster image or a cutout with a transparent background.
+description: Generate PNG assets from text and optional reference images using the local Codex CLI and its ChatGPT sign-in. Use when the user asks to generate or edit a raster image or create a transparent cutout.
 ---
 
 # Generate a PNG with Codex
@@ -16,6 +16,10 @@ node "<skill-dir>/bin/codex-image.mjs" -o "assets/hero.png" "Studio photo of a s
 Use the user's requested destination when available. The script creates parent
 directories, preserves existing files, and prints the absolute path of the PNG
 on success. Use that path to present or incorporate the asset.
+
+For an edit or reference-guided image, pass each local image as
+`--reference "<path>"` before the text prompt. Pass up to five images and
+describe how to use each one in the order supplied.
 
 For a cutout, request an actual transparent background in the prompt. Codex
 chooses quality and pixel dimensions automatically.

@@ -1,15 +1,17 @@
 #!/usr/bin/env node
-import { lstat, link, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { lstat, link, mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { generate } from '../lib/codex.mjs';
 
 const { version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-const help = `Usage: codex-image [--output FILE.png] "image description"
-       codex-image [--output FILE.png] - < prompt.txt
+const maxReferences = 5;
+const help = `Usage: codex-image [options] "image description"
+       codex-image [options] - < prompt.txt
 
   -o, --output FILE.png  Destination (default: image.png)
+  -r, --reference FILE   Local reference image (repeat up to ${maxReferences} times)
   -h, --help             Show help
   -v, --version          Show version
 
@@ -41,11 +43,28 @@ async function publishImage(image, path) {
   }
 }
 
+async function resolveReferences(paths) {
+  if (paths.length > maxReferences) {
+    throw new Error(`Pass up to ${maxReferences} reference images.`);
+  }
+  return Promise.all(paths.map(async (path) => {
+    const absolutePath = resolve(path);
+    const info = await stat(absolutePath).catch((error) => {
+      throw new Error(`Cannot access reference image "${path}" (${error.code}).`);
+    });
+    if (!info.isFile() || info.size === 0) {
+      throw new Error(`Reference image must be a nonempty file: "${path}"`);
+    }
+    return absolutePath;
+  }));
+}
+
 async function main() {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
     options: {
       output: { type: 'string', short: 'o', default: 'image.png' },
+      reference: { type: 'string', short: 'r', multiple: true, default: [] },
       help: { type: 'boolean', short: 'h' },
       version: { type: 'boolean', short: 'v' },
     },
@@ -68,11 +87,12 @@ async function main() {
 
   const output = resolve(values.output);
   await assertAvailable(output);
+  const references = await resolveReferences(values.reference);
   await mkdir(dirname(output), { recursive: true });
 
   const scratch = await mkdtemp(join(tmpdir(), 'codex-image-'));
   try {
-    const image = await generate(prompt, scratch, version);
+    const image = await generate(prompt, scratch, version, references);
     await publishImage(image, output);
   } finally {
     await rm(scratch, { recursive: true, force: true });
